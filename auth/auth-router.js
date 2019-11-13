@@ -25,6 +25,9 @@ router.post('/login', (req, res) => {
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
+        req.session.username = user.username; //good - add to session obj
+        // req.session = {username: user.username} //NO! BAD! Don't override session obj
+
         res.status(200).json({
           message: `Welcome ${user.username}!`,
         });
@@ -36,5 +39,19 @@ router.post('/login', (req, res) => {
       res.status(500).json(error);
     });
 });
+
+router.get('/logout', (req, res) => {
+  if (req.session) {
+    req.session.destroy(error => {
+      if(error) {
+        res.status(500).json({ message: 'you can log out any time you like, but you can never leave' });
+      } else {
+        res.status(200).json({ message: 'Logged out successfully' });
+      }
+    });
+  } else {
+    res.status(200).json({ message: 'Bye Felicia' });
+  }
+})
 
 module.exports = router;
